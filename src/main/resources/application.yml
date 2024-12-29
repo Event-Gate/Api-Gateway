@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        enabled: true
+        register: true
+  profiles:
+    active: consul
+
