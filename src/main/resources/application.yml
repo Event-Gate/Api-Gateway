@@ -1,13 +1,54 @@
+server:
+  port: 8081
+
 spring:
   application:
-    name: api-gateway
+    name: api-gateaway
   cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+      routes:
+        - id: user-service-auth
+          uri: lb://user-service
+          predicates:
+            - Path=/api/auth/users/**, /oauth2/authorization/google, /login/oauth2/code/google, /login/**
+          filters:
+            - PreserveHostHeader
+
+        - id: user-service-public
+          uri: lb://user-service
+          predicates:
+            - Path=/api/public/users/**
+          filters:
+            - RemoveRequestHeader=Authorization
     consul:
+      discovery:
+        healthCheckPath: /actuator/health
+        healthCheckInterval: 10s
+        instance-id: ${spring.application.name}:${random.value}
+        service-name: api-gateaway
       host: localhost
       port: 8500
-      discovery:
-        enabled: true
-        register: true
-  profiles:
-    active: consul
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${OAUTH2_GOOGLE_CLIENT_ID}
+            client-secret: ${OAUTH2_GOOGLE_CLIENT_SECRET}
+            scope:
+              - openid
+              - profile
+              - email
+            redirect-uri: ${REDIRECT_URI}
 
+jwt:
+  secret: ${JWT_SECRET}
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.web: DEBUG
