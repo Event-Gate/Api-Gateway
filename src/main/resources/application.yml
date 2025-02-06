@@ -23,6 +23,27 @@ spring:
             - Path=/api/public/users/**
           filters:
             - RemoveRequestHeader=Authorization
+
+        - id: event-service-auth
+          uri: lb://event-service
+          predicates:
+            - Path=/api/auth/events/**
+          filters:
+            - PreserveHostHeader
+
+        - id: event-service-public
+          uri: lb://event-service
+          predicates:
+            - Path=/api/public/events/**
+          filters:
+            - RemoveRequestHeader=Authorization
+
+        - id: ticket-service-auth
+          uri: lb://ticket-service
+          predicates:
+            - Path=/api/auth/tickets/**
+          filters:
+            - PreserveHostHeader
     consul:
       discovery:
         healthCheckPath: /actuator/health
